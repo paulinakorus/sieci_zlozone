@@ -1,0 +1,5 @@
+notebook==7.5.4
+jupyterlab==4.5.5
+networkx==3.6.1
+matplotlib==3.10.8
+seaborn==0.13.2
