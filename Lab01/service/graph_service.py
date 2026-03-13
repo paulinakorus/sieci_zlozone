@@ -47,3 +47,22 @@ class Graph:
 
     def betweenness_centrality(self):
         return nx.betweenness_centrality(self.G, normalized=False, endpoints=False) # true czy false
+
+    def closeness_centrality(self):
+        return nx.closeness_centrality(self.G)
+
+    def clustering_coefficient(self):
+        return nx.clustering(self.G)
+
+    def pagerank(self):
+        return nx.pagerank(self.G)
+
+    def shortest_path_length(self):
+        return nx.shortest_path_length(self.G)
+
+    def diameter(self):
+        return nx.diameter(self.G)
+
+    def connected_components(self):
+        return nx.number_connected_components(self.G)
+
