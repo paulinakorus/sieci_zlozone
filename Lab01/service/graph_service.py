@@ -1,19 +1,34 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 import seaborn as sns
+import pandas as pd
+from fontTools.misc.cython import returns
+
 
 class Graph:
-    def __init__(self, random: bool, nodes: int, probability: float = None, edges_per_node: int = None):
-        if random:
+    def __init__(self, nodes: int, probability: float = None, edges_per_node: int = None):
+        if edges_per_node is None:
             self.G = nx.erdos_renyi_graph(n=nodes, p=probability)
         else:
             self.G = nx.barabasi_albert_graph(n=nodes, m=edges_per_node)
 
-    def plot_graph(self):
+    def plot_graph(self, if_pagerank: bool = False):
         plt.figure(figsize=(12, 8))
         pos = nx.kamada_kawai_layout(self.G)
-        nx.draw(self.G, pos=pos, with_labels=True, node_color="lightblue", node_size=300)
-        plt.title("Erdős–Rényi Random Graph")
+        nodes_size = []
+        if if_pagerank:
+            pagerank = nx.pagerank(self.G)
+            nodes_size = [pagerank[node] * 40000 for node in self.G.nodes()]
+        nx.draw_networkx(
+            self.G,
+            pos=pos,
+            with_labels=True,
+            node_color="lightblue",
+            node_size=nodes_size if if_pagerank else 30,
+            edge_color="gray",
+            alpha=0.7
+        )
+        plt.tight_layout()
         plt.show()
 
     def print_info(self):
@@ -48,6 +63,10 @@ class Graph:
     def betweenness_centrality(self):
         return nx.betweenness_centrality(self.G, normalized=False, endpoints=False) # true czy false
 
+    def max_betweenness_centrality(self):
+        betweeness = self.betweenness_centrality()
+        return max(betweeness, key=betweeness.get)
+
     def closeness_centrality(self):
         return nx.closeness_centrality(self.G)
 
@@ -65,4 +84,33 @@ class Graph:
 
     def connected_components(self):
         return nx.number_connected_components(self.G)
+
+    def density(self):
+        return nx.density(self.G)
+
+    def get_dataframe(self) -> pd.DataFrame:
+        betweeness = self.betweenness_centrality()
+        closeness = self.closeness_centrality()
+        clustering = self.clustering_coefficient()
+        pagerank = self.pagerank()
+
+        largest_cc = max(nx.connected_components(self.G), key=len)
+        G_largest = self.G.subgraph(largest_cc)
+
+        avg_shortest_path = nx.average_shortest_path_length(G_largest)
+        diameter = nx.diameter(G_largest)
+        num_components = nx.number_connected_components(self.G)
+
+        df = pd.DataFrame({
+            "betweenness": pd.Series(betweeness),
+            "closeness": pd.Series(closeness),
+            "clustering": pd.Series(clustering),
+            "pagerank": pd.Series(pagerank),
+            "avg_shortest_path": avg_shortest_path,
+            "diameter": diameter,
+            "num_components": num_components,
+        })
+        return df
+
+
 
