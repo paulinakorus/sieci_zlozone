@@ -41,10 +41,9 @@ class MyGraph:
         plt.show()
 
     def print_info(self, text: bool = True):
-        simple_graph = self._get_simple_graph()
-        nodes = simple_graph.nodes()
+        nodes = self.G.nodes()
         nodes_num = len(nodes)
-        edges = simple_graph.edges()
+        edges = self.G.edges()
         edges_num = len(edges)
 
         print("Nodes:", nodes) if text else None
@@ -118,8 +117,7 @@ class MyGraph:
         return nx.density(self._get_simple_graph())
 
     def nodes_without_edges(self):
-        nodes_num = len([node for node,degree in dict(self.G.degree()).items() if degree == 0])
-        print(f"Nodes without edges: {nodes_num}")
+        return len([node for node,degree in dict(self.G.degree()).items() if degree == 0])
 
     def get_dataframe(self) -> pd.DataFrame:
         simple_graph = self._get_simple_graph()

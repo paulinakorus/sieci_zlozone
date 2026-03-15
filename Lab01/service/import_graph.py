@@ -1,7 +1,6 @@
 import networkx as nx
 import pandas as pd
 from networkx import DiGraph
-from networkx.classes import MultiGraph
 
 from service.graph_service import MyGraph
 
