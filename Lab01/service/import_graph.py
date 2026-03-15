@@ -3,12 +3,12 @@ import pandas as pd
 from networkx import DiGraph
 from networkx.classes import MultiGraph
 
-from service.graph_service import Graph
+from service.graph_service import MyGraph
 
 
 class ImportGraph:
     @staticmethod
-    def get_radoslaw_from_file(directed: bool = False) -> Graph:
+    def get_radoslaw_from_file(directed: bool = False) -> MyGraph:
         input_file = 'out.radoslaw_email_email'
         df = pd.read_csv(
             input_file,
@@ -31,4 +31,4 @@ class ImportGraph:
             edges = df.values
             G = nx.MultiGraph()
             G.add_edges_from(edges)
-        return Graph(G=G)
+        return MyGraph(G=G)

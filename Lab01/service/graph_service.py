@@ -5,7 +5,7 @@ import pandas as pd
 from scipy.stats import kendalltau
 
 
-class Graph:
+class MyGraph:
     def __init__(self, nodes: int = None, probability: float = None, edges_per_node: int = None, G: nx.Graph = None):
         if G is None:
             if edges_per_node is None:
@@ -40,16 +40,16 @@ class Graph:
         plt.tight_layout()
         plt.show()
 
-    def print_info(self):
+    def print_info(self, text: bool = True):
         simple_graph = self._get_simple_graph()
         nodes = simple_graph.nodes()
         nodes_num = len(nodes)
         edges = simple_graph.edges()
         edges_num = len(edges)
 
-        # print("Nodes:", nodes)
+        print("Nodes:", nodes) if text else None
         print(f"Nodes number: {nodes_num}")
-        # print("Edges:", edges)
+        print("Edges:", edges) if text else None
         print(f"Edges number: {edges_num}")
 
     def plot_degree(self):
@@ -202,5 +202,3 @@ class Graph:
         if self.G.is_directed():
             return nx.is_strongly_connected(self.G)
         return None
-
-
