@@ -2,6 +2,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
+from scipy.stats import kendalltau
 
 
 class Graph:
@@ -72,16 +73,10 @@ class Graph:
 
     def plot_betweenness_centrality(self):
         simple_graph = self._get_simple_graph()
-        betweeness_value = [bet for _, bet in simple_graph.betweenness_centrality()]
+        betweenness = nx.betweenness_centrality(simple_graph)
+        betweenness_values = list(betweenness.values())
         plt.figure(figsize=(10, 6))
-        sns.histplot(
-            betweeness_value,
-            bins=25,
-            kde=True,
-            color="steelblue",
-            edgecolor="white",
-            linewidth=0.5
-        )
+        sns.histplot(betweenness_values, bins=25, kde=True, color="steelblue", edgecolor="white", linewidth=0.5)
         plt.title("Betweenness Centrality Distribution", fontsize=14)
         plt.xlabel("Betweenness")
         plt.ylabel("Count")
@@ -90,16 +85,10 @@ class Graph:
 
     def plot_closeness_centrality(self):
         simple_graph = self._get_simple_graph()
-        closeness_value = [clos for _, clos in simple_graph.betweenness_centrality()]
+        closeness = nx.closeness_centrality(simple_graph)
+        closeness_values = list(closeness.values())
         plt.figure(figsize=(10, 6))
-        sns.histplot(
-            closeness_value,
-            bins=25,
-            kde=True,
-            color="steelblue",
-            edgecolor="white",
-            linewidth=0.5
-        )
+        sns.histplot(closeness_values, bins=25, kde=True, color="steelblue", edgecolor="white", linewidth=0.5)
         plt.title("Closeness Centrality Distribution", fontsize=14)
         plt.xlabel("Closeness")
         plt.ylabel("Count")
@@ -122,17 +111,15 @@ class Graph:
     def pagerank(self):
         return nx.pagerank(self._get_simple_graph())
 
-    def shortest_path_length(self):
-        return nx.shortest_path_length(self._get_simple_graph())
-
-    def diameter(self):
-        return nx.diameter(self._get_simple_graph())
-
     def connected_components(self):
         return nx.number_connected_components(self._get_simple_graph())
 
     def density(self):
         return nx.density(self._get_simple_graph())
+
+    def nodes_without_edges(self):
+        nodes_num = len([node for node,degree in dict(self.G.degree()).items() if degree == 0])
+        print(f"Nodes without edges: {nodes_num}")
 
     def get_dataframe(self) -> pd.DataFrame:
         simple_graph = self._get_simple_graph()
@@ -141,11 +128,7 @@ class Graph:
         clustering = self.clustering_coefficient()
         pagerank = self.pagerank()
 
-        largest_cc = max(nx.connected_components(simple_graph), key=len)
-        G_largest = simple_graph.subgraph(largest_cc)
-
-        avg_shortest_path = nx.average_shortest_path_length(G_largest)
-        diameter = nx.diameter(G_largest)
+        diameter, avg_shortest_path = self.diameter_and_shortest_path_length()
         num_components = nx.number_connected_components(simple_graph)
 
         df = pd.DataFrame({
@@ -174,5 +157,50 @@ class Graph:
 
             self.G.remove_edges_from(remove_list)
             self.G = nx.Graph(self.G)
+
+    def kendall(self):
+        simple_graph = self._get_simple_graph()
+
+        degree = list(dict(nx.degree(simple_graph)).values())
+        betweeness = list(nx.betweenness_centrality(simple_graph).values())
+        closeness = list(nx.closeness_centrality(simple_graph).values())
+
+        ken_deg_bet, _ = kendalltau(degree, betweeness)
+        ken_deg_close, _ = kendalltau(degree, closeness)
+        ken_bet_close, _ = kendalltau(betweeness, closeness)
+
+        print("Korelacja Kendall τ:")
+        print("degree vs betweenness:", ken_deg_bet)
+        print("degree vs closeness:", ken_deg_close)
+        print("betweenness vs closeness:", ken_bet_close)
+
+    def top_nodes(self):
+        simple_graph = self._get_simple_graph()
+        n = 5
+
+        degree = dict(nx.degree(simple_graph))
+        betweeness = nx.betweenness_centrality(simple_graph)
+        closeness = nx.closeness_centrality(simple_graph)
+
+        print("Top degree:")
+        print(sorted(degree, key=degree.get, reverse=True)[:n])
+        print("Top betweenness:")
+        print(sorted(betweeness, key=betweeness.get, reverse=True)[:n])
+        print("Top closeness:")
+        print(sorted(closeness, key=closeness.get, reverse=True)[:n])
+
+    def diameter_and_shortest_path_length(self):
+        simple_graph = self._get_simple_graph()
+        largest_cc = max(nx.connected_components(simple_graph), key=len)
+        G_largest = simple_graph.subgraph(largest_cc)
+
+        avg_shortest_path = nx.average_shortest_path_length(G_largest)
+        diameter = nx.diameter(G_largest)
+        return diameter, avg_shortest_path
+
+    def if_strongly_connected(self):
+        if self.G.is_directed():
+            return nx.is_strongly_connected(self.G)
+        return None
 
 
