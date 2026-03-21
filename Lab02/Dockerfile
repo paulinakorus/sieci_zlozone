@@ -5,6 +5,12 @@ ARG GID
 
 WORKDIR /app
 
+RUN apt-get update && apt-get install -y \
+    graphviz \
+    libgraphviz-dev \
+    pkg-config \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN groupadd --gid $GID myuser && useradd -u $UID --gid $GID -m myuser && chown -R myuser /app
 
 COPY requirements.txt .
